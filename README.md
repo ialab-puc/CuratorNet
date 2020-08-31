@@ -23,4 +23,4 @@ In `/src`, you can find the CuratorNet implementation.
 
 ## License
 
-This repository is MIT licensed (see [LICENSE](LICENSE)), except where noted otherwise. CHECK THIS IS THE ACTUAL CASE.
+This repository is MIT licensed (see [LICENSE](LICENSE)), except where noted otherwise.
