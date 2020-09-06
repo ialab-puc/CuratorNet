@@ -1,7 +1,8 @@
 tensorflow==1.14.0
 keras
-sklearn
+scikit-learn
 pandas
 numpy
 requests
 Pillow
+gdown
