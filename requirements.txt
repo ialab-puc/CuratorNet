@@ -6,3 +6,4 @@ numpy
 requests
 Pillow
 gdown
+jupyter

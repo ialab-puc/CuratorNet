@@ -104,7 +104,8 @@ def plot_images(plt, image_cache, ids):
         ax.set_title('%d) id = %d' % (i, _id))
         ax.imshow(img, interpolation="nearest")
     plt.show()
-        
+    
+    
 def read_ids_file(dirpath, ids_filename):
     from os import path    
     filepath = path.join(dirpath, ids_filename)
@@ -113,7 +114,7 @@ def read_ids_file(dirpath, ids_filename):
             index2id = json.load(f)
     elif ids_filename[-4:] == '.npy':
         import numpy as np
-        index2id = np.load(filepath)
+        index2id = np.load(filepath, allow_pickle=True)
     else:
         assert ids_filename[-3:] == 'ids'
         with open(filepath) as f:
@@ -151,45 +152,38 @@ class User:
         self.artwork_idxs_set = set()
         self.timestamps = []
         self.artist_ids_set = set()
-        self.content_cluster_ids_set = set()
-        self.style_cluster_ids_set = set()
+        self.cluster_ids_set = set()
         
     def clear(self):
         self.artwork_ids.clear()
         self.artwork_idxs.clear()
         self.artwork_idxs_set.clear()        
         self.artist_ids_set.clear()
-        self.content_cluster_ids_set.clear()
-        self.style_cluster_ids_set.clear()
+        self.cluster_ids_set.clear()
         self.timestamps.clear()
     
-    def refresh_nonpurchased_cluster_ids(self, n_content_clusters, n_style_clusters):
-        self.nonp_content_cluster_ids = [c for c in range(n_content_clusters) if c not in self.content_cluster_ids_set]
-        self.nonp_style_cluster_ids = [c for c in range(n_style_clusters) if c not in self.style_cluster_ids_set]
-        assert len(self.nonp_content_cluster_ids) > 0
-        assert len(self.nonp_style_cluster_ids) > 0
+    def refresh_nonpurchased_cluster_ids(self, n_clusters):
+        self.nonp_cluster_ids = [c for c in range(n_clusters) if c not in self.cluster_ids_set]
+        assert len(self.nonp_cluster_ids) > 0
         
     def refresh_cluster_ids(self):
-        self.content_cluster_ids = list(self.content_cluster_ids_set)
-        self.style_cluster_ids = list(self.style_cluster_ids_set)
-        assert len(self.content_cluster_ids) > 0
-        assert len(self.style_cluster_ids) > 0
+        self.cluster_ids = list(self.cluster_ids_set)
+        assert len(self.cluster_ids) > 0
         
     def refresh_artist_ids(self):
         self.artist_ids = list(self.artist_ids_set)
         assert len(self.artist_ids) > 0
         
-    def append_transaction(self, artwork_id, timestamp, artwork_id2index, artist_ids, content_cluster_ids, style_cluster_ids):
+    def append_transaction(self, artwork_id, timestamp, artwork_id2index, artist_ids, cluster_ids):
         aidx = artwork_id2index[artwork_id]
         self.artwork_ids.append(artwork_id)
         self.artwork_idxs.append(aidx)
         self.artwork_idxs_set.add(aidx)
         self.artist_ids_set.add(artist_ids[aidx])
-        self.content_cluster_ids_set.add(content_cluster_ids[aidx])
-        self.style_cluster_ids_set.add(style_cluster_ids[aidx])
+        self.cluster_ids_set.add(cluster_ids[aidx])
         self.timestamps.append(timestamp)
     
-    def remove_last_nonfirst_purchase_basket(self, artwork_id2index, artist_ids, content_cluster_ids, style_cluster_ids):
+    def remove_last_nonfirst_purchase_basket(self, artwork_id2index, artist_ids, cluster_ids):
         baskets = self.baskets
         len_before = len(baskets)
         if len_before >= 2:
@@ -198,7 +192,7 @@ class User:
             timestamps = self.timestamps[:last_b[0]]
             self.clear()
             for aid, t in zip(artwork_ids, timestamps):
-                self.append_transaction(aid, t, artwork_id2index, artist_ids, content_cluster_ids, style_cluster_ids)
+                self.append_transaction(aid, t, artwork_id2index, artist_ids, cluster_ids)
             assert len(self.baskets) == len_before - 1
         
     def build_purchase_baskets(self):
@@ -235,52 +229,10 @@ class User:
             assert(b1[0] + b1[1] == b2[0])
         assert(baskets[0][0] == 0)
         assert(baskets[-1][0] + baskets[-1][1] == n)
-
+        
 class VisualSimilarityHandler:
     def __init__(self, cluster_ids, embeddings):
         self._cluster_ids = cluster_ids
-        self._cosineSimCache = dict()
-        self.count = 0
-        # store embeddings with l2 normalization
-        from numpy.linalg import norm
-        from numpy import dot
-        self._embeddings = embeddings / norm(embeddings, axis=1).reshape((-1,1))
-        self.dot = dot
-        
-    def same(self,i,j):
-        if self._cluster_ids[i] != self._cluster_ids[j]:
-            return False        
-        if abs(self.similarity(i,j) - 1.) < 1e-7:
-            self.count += 1
-            return True
-        return False
-    
-    def similarity(self,i,j):
-        if i > j:
-            i, j = j, i
-        k = (i,j)
-        try:
-            sim = self._cosineSimCache[k]
-        except KeyError:
-            sim = self._cosineSimCache[k] = self.dot(self._embeddings[i], self._embeddings[j])
-        return sim
-    
-    def validate_triple(self, q, p, n, margin=0.05):
-        cq = self._cluster_ids[q]
-        cp = self._cluster_ids[p]
-        cn = self._cluster_ids[n]
-        if cq == cp and cq != cn:
-            return True
-        if cq == cn and cq != cp:
-            return False
-        if self.similarity(q,p) > self.similarity(q,n) + margin:
-            return True
-        return False
-
-class VisualSimilarityHandler_ContentAndStyle:
-    def __init__(self, content_cluster_ids, style_cluster_ids, embeddings):
-        self._content_cluster_ids = content_cluster_ids
-        self._style_cluster_ids = style_cluster_ids
         self._cosineSimCache = dict()
         self.count = 0
         # store embeddings with l2 normalization
@@ -289,10 +241,8 @@ class VisualSimilarityHandler_ContentAndStyle:
         self._embeddings = embeddings / reshape(norm(embeddings, axis=1), (-1,1))
         
     def same(self,i,j):
-        if self._content_cluster_ids[i] != self._content_cluster_ids[j]:
-            return False
-        if self._style_cluster_ids[i] != self._style_cluster_ids[j]:
-            return False
+        if self._cluster_ids[i] != self._cluster_ids[j]:
+            return False        
         if abs(self.similarity(i,j) - 1.) < 1e-7:
             self.count += 1
             return True
@@ -310,50 +260,16 @@ class VisualSimilarityHandler_ContentAndStyle:
         return sim
     
     def validate_triple(self, q, p, n, margin=0.05):
-        ccids = self._content_cluster_ids        
-        ccq = ccids[q]
-        ccp = ccids[p]
-        ccn = ccids[n]
-        scids = self._style_cluster_ids
-        scq = scids[q]
-        scp = scids[p]
-        scn = scids[n]
-        
-        qp_strong_match = (ccq == ccp and scq == scp)
-        qn_strong_match = (ccq == ccn and scq == scn)
-        if qp_strong_match != qn_strong_match:
-            return qp_strong_match > qn_strong_match
-        
-        qp_weak_match =   (ccq == ccp or scq == scp)
-        qn_weak_match =   (ccq == ccn or scq == scn)
-        if qp_weak_match != qn_weak_match:
-            return qp_weak_match > qn_weak_match
-        
-        return self.similarity(q,p) > self.similarity(q,n) + margin
-    
-class HybridScorer:
-    def __init__(self, vissim_handler, artists, artist_boost):
-        self.vissim_handler = vissim_handler
-        self.artists = artists
-        self.artist_boost = artist_boost
-        self.score_cache = dict()
-        
-    def simfunc(self, i, j):
-        sim = self.vissim_handler.similarity(i, j)
-        ai = self.artists[i]
-        if ai == -1: return sim        
-        aj = self.artists[j]
-        if ai == aj: sim += self.artist_boost
-        return sim
-    
-    def get_score(self, u, profile, i):
-        key = (u,i)
-        try:
-            return self.score_cache[key]
-        except KeyError:
-            score = sum(self.simfunc(i,j) for j in profile) / len(profile)
-            self.score_cache[key] = score
-            return score
+        cq = self._cluster_ids[q]
+        cp = self._cluster_ids[p]
+        cn = self._cluster_ids[n]
+        if cq == cp and cq != cn:
+            return True
+        if cq == cn and cq != cp:
+            return False
+        if self.similarity(q,p) > self.similarity(q,n) + margin:
+            return True
+        return False        
     
 def get_decaying_learning_rates(maxlr, minlr, decay_coef):
     assert maxlr > minlr > 0
@@ -380,5 +296,8 @@ def auc_exact(ground_truth_indexes, inventory_size):
     auc = 0
     for i, idx in enumerate(ground_truth_indexes):
         auc += ((inventory_size - (idx+1)) - (n - (i+1))) / (inventory_size - n)
-    auc /= n
+    try:
+        auc /= n
+    except ZeroDivisionError:
+        auc = 0
     return auc

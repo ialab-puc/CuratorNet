@@ -21,6 +21,17 @@ In `/experiments`, you can find all notebooks necessary for replicating our resu
 
 In `/src`, you can find the CuratorNet implementation.
 
+## To try it out
+Execute the following commands from the main folder:
+- `virtualenv -p python3 ./env`
+- `source ./env/bin/activate`
+- `pip install -r requirements.txt`
+- `ipython kernel install --name "CuratorNetKernel" --user`
+- `jupyter notebook experiments/main.ipynb`
+
+In the notebook:
+- `Kernel -> Change kernel -> CuratorNetKernel`
+- `Cell -> Run All`
 
 ## How does it work
 
