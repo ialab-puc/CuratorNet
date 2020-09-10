@@ -13,7 +13,7 @@ CuratorNet is designed with the goal of maximizing generalization: the network h
 
 In this repository, we provide a TensorFlow implementation of CuratorNet.
 
-The full paper is available at [arxiv link](https://arxiv.org/), and is part of the ComplexRec workshop proceedings at the ACM RecSys 2020 conference.
+The full paper is available at [arxiv link](https://arxiv.org/abs/2009.04426), and is part of the ComplexRec workshop proceedings at the ACM RecSys 2020 conference.
 
 ## Folder structure
 
