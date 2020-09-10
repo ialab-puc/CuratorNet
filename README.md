@@ -1,8 +1,9 @@
 # CuratorNet: Visually-aware Recommendation of Art Images
 
-### Manuel Cartagena<sup>1</sup>, Patricio Cerda<sup>1</sup>, Pablo Messina<sup>1</sup>, Felipe Del Río<sup>1</sup>, Denis Parra<sup>1</sup>
+### Manuel Cartagena<sup>1</sup>, Patricio Cerda<sup>1</sup>, Pablo Messina<sup>1,2</sup>, Felipe Del Río<sup>1,2</sup>, Denis Parra<sup>1,2</sup>
 
 #### <sup>1</sup> Pontificia Universidad Católica de Chile
+#### <sup>2</sup> IMFD: Millenium Institute Foundational Research on Data
 
 ___
 ## Introduction
