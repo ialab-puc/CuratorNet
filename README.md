@@ -16,6 +16,22 @@ In this repository, we provide a TensorFlow implementation of CuratorNet.
 
 The full paper is available at [arxiv link](https://arxiv.org/abs/2009.04426), and is part of the ComplexRec workshop proceedings at the ACM RecSys 2020 conference.
 
+## Citation
+
+If you find this repository useful for your research, please consider citing our paper: 
+```
+@inproceedings{curatornet2020,
+    author = {Manuel Cartagena and Patricio Cerda and Pablo Messina and Felipe Del Río and Denis Parra},
+    title = {CuratorNet: Visually-aware Recommendation of Art Image},
+    year = {2020},
+    url = {https://arxiv.org/abs/2009.04426},
+    booktitle = {Proceedings of the Fourth Workshop on Recommendation in Complex Environments},
+    keywords = {visual art, deep learning, recommender systems},
+    location = {Virtual Event, Brazil},
+}
+```
+
+
 ## Folder structure
 
 In `/experiments`, you can find all notebooks necessary for replicating our results.
