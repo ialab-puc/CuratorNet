@@ -14,7 +14,7 @@ CuratorNet is designed with the goal of maximizing generalization: the network h
 
 In this repository, we provide a TensorFlow implementation of CuratorNet.
 
-The full paper is available at [arxiv link](https://arxiv.org/abs/2009.04426), and is part of the ComplexRec workshop proceedings at the ACM RecSys 2020 conference.
+The full paper pre-print is available at [arXiv](https://arxiv.org/abs/2009.04426), and is part of the ComplexRec workshop proceedings at the ACM RecSys 2020 conference.
 
 ## Citation
 
@@ -52,11 +52,14 @@ In the notebook:
 
 ## How does it work
 
-CuratorNet leverages neural image embeddings obtained from pre-trained CNNs. We train CuratorNet to rank triplets that associate a user with a pair of images: one where we have positive feedback from said user, and one where we do not. 
-
-CuratorNet draws inspiration from [VBPR](https://arxiv.org/abs/1510.01784) and [Youtube’s Recommender System](https://static.googleusercontent.com/media/research.google.com/es//pubs/archive/45530.pdf): we optimize for ranking using triplet loss, and seek generalization to new users without introducing additional parameters or further training. We also propose a set of sampling guidelines to generate triplets for training our model, which improves the performance of CuratorNet and VBPR with respect to random negative sampling.
+CuratorNet leverages neural image embeddings obtained from pre-trained CNNs. We train CuratorNet to rank triplets that associate a user with a pair of images: one where we have positive feedback from said user, and one where we do not.  
 
 ![](CuratorNet.png)
 
+CuratorNet draws inspiration from [VBPR](https://arxiv.org/abs/1510.01784) and [Youtube’s Recommender System](https://static.googleusercontent.com/media/research.google.com/es//pubs/archive/45530.pdf): we optimize for ranking using triplet loss, and seek generalization to new users without introducing additional parameters or further training. We also propose a set of sampling guidelines to generate triplets for training our model, which improves the performance of CuratorNet and VBPR with respect to random negative sampling.
 
-To test our approach, we use an anonymised dataset of art purchases in an e-commerce website. Each transaction associates a user's ID with the ID and visual embedding of the painting that she bought. This dataset can be downloaded to train CuratorNet. Although the artwork itself is not included, CuratorNet's architecture enables usage with any other dataset once trained.
+![](SamplingResults.png)
+
+To test our approach, we use an anonymised dataset of art purchases in an e-commerce website. Each transaction associates a user's ID with the ID and visual embedding of the painting that she bought. This dataset can be downloaded to train and evaluate CuratorNet, as seen in the table below. Although the artwork itself is not included, CuratorNet's architecture enables usage with any other dataset once trained.
+
+![](Results.png)
