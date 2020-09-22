@@ -44,7 +44,7 @@ Execute the following commands from the main folder:
 - `source ./env/bin/activate`
 - `pip install -r requirements.txt`
 - `ipython kernel install --name "CuratorNetKernel" --user`
-- `jupyter notebook experiments/main.ipynb`
+- `jupyter notebook`
 
 Train CuratorNet:
 - Execute notebook `experiments/training.ipynb`
