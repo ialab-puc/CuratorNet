@@ -110,9 +110,7 @@ def train_network(train_minibatches, test_minibatches,
                   item_layer_units,
                   profile_pooling_mode,
                   model_path,
-                  epochs=1000,
-                  max_seconds_training=3600,
-                  min_seconds_to_check_improvement=60,
+                  epochs=100,
                   early_stopping_checks=4,
                   weight_decay=0.001,
                   learning_rates=[1e-3]):
@@ -123,7 +121,7 @@ def train_network(train_minibatches, test_minibatches,
     print('learning_rates = ', learning_rates)
     
     with tf.Graph().as_default():
-        network = ContentBasedLearn2RankNetwork_Train(
+        network = CuratorNet_Train(
             pretrained_embedding_dim=pretrained_embeddings.shape[1],
             user_layer_units=user_layer_units,
             item_layer_units=item_layer_units,

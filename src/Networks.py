@@ -19,7 +19,7 @@ class TrainLogger:
                         model_updated))
 
 
-class ContentBasedLearn2RankNetwork_Base:
+class CuratorNet_Base:
     
     @staticmethod
     def compute_user_embedding(profile_aggregation_vector, user_layer_units):
@@ -57,7 +57,7 @@ class ContentBasedLearn2RankNetwork_Base:
             return last_output
 
 
-class ContentBasedLearn2RankNetwork_Train(ContentBasedLearn2RankNetwork_Base):
+class CuratorNet_Train(CuratorNet_Base):
     def __init__(self, pretrained_embedding_dim, user_layer_units, item_layer_units, weight_decay,
                  profile_pooling_mode='AVG'):
         
@@ -178,7 +178,7 @@ class ContentBasedLearn2RankNetwork_Train(ContentBasedLearn2RankNetwork_Base):
         })
 
 
-class ContentBasedLearn2RankNetwork_Precomputation(ContentBasedLearn2RankNetwork_Base):
+class CuratorNet_Precomputation(CuratorNet_Base):
     def __init__(self, pretrained_embedding_dim, item_layer_units):        
         
         # --- placeholders
@@ -193,7 +193,7 @@ class ContentBasedLearn2RankNetwork_Precomputation(ContentBasedLearn2RankNetwork
         })
 
 
-class ContentBasedLearn2RankNetwork_Evaluation(ContentBasedLearn2RankNetwork_Base):
+class CuratorNet_Evaluation(CuratorNet_Base):
     def __init__(self, user_layer_units, latent_space_dim, profile_pooling_mode='AVG'):
         
         assert user_layer_units[-1] == latent_space_dim
@@ -471,182 +471,3 @@ class VBPR_Network_Evaluation(VBPR_Network_Base):
     
     def get_user_latent_vectors(self, sess):
         return sess.run(self._user_latent_factors)
-    
-
-def CNN_F(input_tensor, output_dim):
-    with tf.variable_scope("CNN_F", reuse=tf.AUTO_REUSE):
-        
-        # ---- conv layer 1
-        conv1 = tf.layers.conv2d(
-            inputs=input_tensor,
-            filters=64,
-            kernel_size=[11,11],
-            strides=4,
-            padding='same',
-            activation=tf.nn.selu,
-            name='conv1')
-        pool1 = tf.layers.max_pooling2d(
-            inputs=conv1,
-            pool_size=[2,2],
-            strides=2,
-            name='pool1')
-        
-        # ---- conv layer 2
-        conv2 = tf.layers.conv2d(
-            inputs=pool1,
-            filters=256,
-            kernel_size=[5,5],
-            strides=1,
-            padding='same',
-            activation=tf.nn.selu,
-            name='conv2')
-        pool2 = tf.layers.max_pooling2d(
-            inputs=conv2,
-            pool_size=[2,2],
-            strides=2,
-            name='pool2')
-        
-        # ---- conv layer 3
-        conv3 = tf.layers.conv2d(
-            inputs=pool2,
-            filters=256,
-            kernel_size=[3,3],
-            strides=1,
-            padding='same',
-            activation=tf.nn.selu,
-            name='conv3')
-        
-        # ---- conv layer 4
-        conv4 = tf.layers.conv2d(
-            inputs=conv3,
-            filters=256,
-            kernel_size=[3,3],
-            strides=1,
-            padding='same',
-            activation=tf.nn.selu,
-            name='conv4')
-        
-        # ---- conv layer 5
-        conv5 = tf.layers.conv2d(
-            inputs=conv4,
-            filters=256,
-            kernel_size=[3,3],
-            strides=1,
-            padding='same',
-            activation=tf.nn.selu,
-            name='conv5')
-        pool5 = tf.layers.max_pooling2d(
-            inputs=conv5,
-            pool_size=[2,2],
-            strides=2,
-            name='pool5')
-        pool5_flat = tf.layers.flatten(
-            pool5,
-            name='pool5_flat')
-        
-        # ---- full layer 6
-        fc6 = tf.layers.dense(
-            inputs=pool5_flat,
-            units=2048,
-            activation=tf.nn.selu,
-            name='fc6'
-        )
-        
-        # ---- full layer 7
-        fc7 = tf.layers.dense(
-            inputs=fc6,
-            units=512,
-            activation=tf.nn.selu,
-            name='fc7'
-        )
-        
-        # ---- full layer 8
-        fc8 = tf.layers.dense(
-            inputs=fc7,
-            units=output_dim,
-            name='fc8'
-        )
-        
-        return fc8
-    
-    
-class DVBPR_Network:
-    def __init__(self, n_users, n_items, latent_dim):        
-        
-        # ------------------------
-        # ---- placeholders
-        
-        self._RGB_images = tf.placeholder(shape=[None, 224, 224, 3], dtype=tf.float32,
-                                                     name='RGB_images')
-        self._user_index = tf.placeholder(shape=[None], dtype=tf.int32,
-                                          name='user_index')
-        self._positive_item_index = tf.placeholder(shape=[None], dtype=tf.int32,
-                                                   name='positive_item_index')
-        self._negative_item_index = tf.placeholder(shape=[None], dtype=tf.int32,
-                                                   name='negative_item_index')
-        self._learning_rate = tf.placeholder(shape=[], dtype=tf.float32)
-            
-        # ------------------------------------
-        # ---- Global trainable tensors
-        
-        # -- user latent factor matrix
-        # (n_users x user_latent_dim)
-        self._user_latent_factors = tf.Variable(
-            tf.random_uniform([n_users, latent_dim], -1.0, 1.0),
-            name='user_latent_factors'
-        )
-        
-        # -------------------------------
-        # ---- minibatch tensors
-        
-        # -- user
-        self._user_latent_vector = tf.gather(self._user_latent_factors, self._user_index)
-        
-        # -- positive item
-        self._pos_image = tf.gather(self._RGB_images, self._positive_item_index)
-        self._pos_vector = CNN_F(self._pos_image, latent_dim)
-        self._pos_score = tf.reduce_sum(self._user_latent_vector * self._pos_vector, 1)
-        
-        # -- negative item
-        self._neg_image = tf.gather(self._RGB_images, self._negative_item_index)
-        self._neg_vector = CNN_F(self._neg_image, latent_dim)
-        self._neg_score = tf.reduce_sum(self._user_latent_vector * self._neg_vector, 1)
-        
-        # -------------------------------
-        # ---- train-test tensors
-        
-        # -- train loss
-        delta_score = self._pos_score - self._neg_score
-        ones = tf.fill(tf.shape(self._user_latent_vector)[:1], 1.0)
-        loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=delta_score, labels=ones)
-        loss = tf.reduce_mean(loss, name='train_loss')
-        self._train_loss = loss
-        
-        # -- test accuracy
-        accuracy = tf.reduce_sum(tf.cast(delta_score > .0, tf.float32), name='test_accuracy')
-        self._test_accuracy = accuracy
-        
-        # -- optimizer
-        self._optimizer = tf.train.AdamOptimizer(self._learning_rate).minimize(self._train_loss)
-    
-    def optimize_and_get_train_loss(self, sess, RGB_images, user_index, positive_item_index,
-                                    negative_item_index, learning_rate):
-        return sess.run([
-            self._optimizer,
-            self._train_loss,
-        ], feed_dict={
-            self._RGB_images: RGB_images,
-            self._user_index: user_index,
-            self._positive_item_index: positive_item_index,
-            self._negative_item_index: negative_item_index,
-            self._learning_rate: learning_rate,
-        })
-    
-    def get_test_accuracy(self, sess, RGB_images, user_index, positive_item_index, negative_item_index):
-        return sess.run(
-            self._test_accuracy, feed_dict={
-            self._RGB_images: RGB_images,
-            self._user_index: user_index,
-            self._positive_item_index: positive_item_index,
-            self._negative_item_index: negative_item_index,
-        })

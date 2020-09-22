@@ -1,0 +1,6 @@
+data/
+results/
+env/
+curatornet_10m/
+__pycache__/
+.ipynb_checkpoints/

@@ -7,3 +7,4 @@ requests
 Pillow
 gdown
 jupyter
+tabulate
