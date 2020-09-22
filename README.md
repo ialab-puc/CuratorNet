@@ -55,7 +55,7 @@ Precompute embeddings:
 Evaluate CuratorNet:
 - Execute notebook `experiments/evaluation.ipynb`
 
-Compute peformance metrics:
+Compute performance metrics:
 - Execute notebook `experiments/metrics.ipynb`
 
 In each notebook:
