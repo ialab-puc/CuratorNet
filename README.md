@@ -46,7 +46,19 @@ Execute the following commands from the main folder:
 - `ipython kernel install --name "CuratorNetKernel" --user`
 - `jupyter notebook experiments/main.ipynb`
 
-In the notebook:
+Train Curatornet:
+- Execute notebook `experiments/training.ipynb`
+
+Precompute embeddings:
+- Execute notebook `experiments/precomputation.ipynb`
+
+Evaluate Curatornet:
+- Execute notebook `experiments/evaluation.ipynb`
+
+Compute peformance metrics:
+- Execute notebook `experiments/metrics.ipynb`
+
+In each notebook:
 - `Kernel -> Change kernel -> CuratorNetKernel`
 - `Cell -> Run All`
 
