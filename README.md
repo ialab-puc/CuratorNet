@@ -68,7 +68,7 @@ CuratorNet leverages neural image embeddings obtained from pre-trained CNNs. We 
 
 ![](CuratorNet.png)
 
-CuratorNet draws inspiration from [VBPR](https://arxiv.org/abs/1510.01784) and [Youtube’s Recommender System](https://static.googleusercontent.com/media/research.google.com/es//pubs/archive/45530.pdf): we optimize for ranking using triplet loss, and seek generalization to new users without introducing additional parameters or further training. We also propose a set of sampling guidelines to generate triplets for training our model, which improves the performance of CuratorNet and VBPR with respect to random negative sampling.
+CuratorNet draws inspiration from [VBPR](https://arxiv.org/abs/1510.01784) and [Youtube’s Recommender System](https://static.googleusercontent.com/media/research.google.com/es//pubs/archive/45530.pdf): we optimize for ranking using BPR loss, and seek generalization to new users without introducing additional parameters or further training. We also propose a set of sampling guidelines to generate triplets for training our model, which improves the performance of CuratorNet and VBPR with respect to random negative sampling.
 
 ![](SamplingResults.png)
 
